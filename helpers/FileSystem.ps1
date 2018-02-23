@@ -112,6 +112,39 @@ Function Find-StringInDirectory ( [string] $string2Find, [string] $Dir, [string]
     }
 }
 
+Function Set-EnvPerm{
+[CmdletBinding()]
+  Param(
+      [Parameter(Mandatory=$true)] [string] $EnvName,
+      [Parameter(Mandatory=$true)] [string] $EnvVal
+  )
+  
+  Begin{
+    
+  }
+  
+  Process{
+    Try{
+        #[System.Environment]::SetEnvironmentVariable("$EnvName", "$EnvVal", [System.EnvironmentVariableTarget]::User)
+        [System.Environment]::SetEnvironmentVariable("$EnvName", "$EnvVal", [System.EnvironmentVariableTarget]::Machine)
+    }
+    
+    Catch{
+        $exc = $_.Exception
+        Write-Host "Exception Encountered: " $exc.DESCRIPTION
+      Break
+    }
+  }
+  
+  End{
+    If($?){
+        Write-Host "Environment Variable: %$EnvName% is set as: $EnvVal"
+    }
+  }
+}
+
+
+
 Function Get-LargestDrive ( [string] $RemoteComputer = "127.0.0.1", [int]$drivetype = 3 ) 
 {
     Invoke-Command -ComputerName $RemoteComputer -Credential $( Get-Credential ) -ScriptBlock { Get-WMIObject Win32_LogicalDisk -Filter "drivetype=$($drivetype)"  | Sort-Object -Property Size -Descending | Select-Object -First 1 }
