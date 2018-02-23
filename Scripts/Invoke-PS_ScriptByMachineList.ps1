@@ -68,6 +68,9 @@ Function Invoke-PS_ScriptsRemotely{
   }
 }
 
+
+#-----------------------------------------------------------[Execution]---------------------------------------------------------
+
 Start-Transcript -path $LogFile -append
 Invoke-PS_ScriptsRemotely -MachineListForFunction $MachineList -ScriptToRun $Script 
 Stop-Transcript
