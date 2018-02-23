@@ -1,7 +1,3 @@
-	
-#  Invoke-Command -ComputerName PC1,PC2,PC3 -FilePath C:\myFolder\myScript.ps1
-
-
 
 #requires -version 2
 
