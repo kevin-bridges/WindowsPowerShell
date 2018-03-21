@@ -239,6 +239,10 @@ Push-Location \
 [Environment]::CurrentDirectory = ( Get-Location -PSProvider FileSystem ).ProviderPath
 _Write "Environment CurrentDirectory: `t[" ( [Environment]::CurrentDirectory ) "]" DarkGray
 
+#--- Display helpful message about modules
+Write-Host ""
+Write-Host "To see which modules are available, run: Show-MyModules"
+
 <#
  TEST CRAP SHOULD BE DELETED
 #>
