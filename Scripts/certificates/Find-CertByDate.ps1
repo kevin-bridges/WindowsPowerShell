@@ -23,6 +23,8 @@
     -AsList
         Description:    Specify if you want the output as list format instead 
                         if table format
+    -AlternateCreds
+        Description     Supply alternate credentials when running script
 .NOTES
  Version       :  1.0
  Author        :  Kevin Bridges
@@ -37,8 +39,9 @@ specified, the date picker will be used.
 PS:> .\Find-CertByDate.ps1 -Storetype "Personal" -Computername "web1,web2" -Date "12/21/2022"
 Find expired certs on 2 servers. Since the Date is specified, the date picker will not be used.
 .EXAMPLE 
-PS:> .\Find-CertByDate.ps1 -Storetype "Personal" -Serverlist ".\servers.txt" -Date "12/21/2022"
-Find expired certs on 2 servers using a server list. Since the Date is specified, the date picker will not be used.
+PS:> .\Find-CertByDate.ps1 -Storetype "Personal" -Serverlist ".\servers.txt" -Date "12/21/2022" -AlternateCreds
+Find expired certs on 2 servers using a server list using alternate credentials. 
+Since the Date is specified, the date picker will not be used.
 .EXAMPLE 
 PS:> .\Find-CertByDate.ps1 -Storetype "Intermediate" -Serverlist ".\servers.txt" -AsList
 Find expired certs on 2 servers using a server list. Since the Date is specified, the date picker will not be used.
@@ -54,7 +57,8 @@ param(
   [Parameter(Mandatory=$true,ParameterSetName='List')] [string] $Serverlist,
   [Parameter(Mandatory=$true,ParameterSetName='Localhost')] [switch] $Localhost,
   [Parameter(Mandatory=$false)] [datetime] $Date,
-  [Parameter(Mandatory=$false)] [switch] $AsList
+  [Parameter(Mandatory=$false)] [switch] $AsList,
+  [Parameter(Mandatory=$false)] [Switch] $AlterateCreds=$false
 )
 
 # Map friendly names to actual cert store objects
@@ -66,7 +70,15 @@ if ($Storetype -eq 'Personal'){
     $st = 'cert:\LocalMachine\ca'
 }
 
-
+# Get altername credentials if switch is selected
+if($AlterateCreds -eq $true){
+    $error.Clear()
+    $mypwd = Get-Credential
+    if ($error.Count -gt 0) {
+        Write-Error "User canceled"
+        exit
+    }
+}
 
 function Get-ExpiredByDate{
     Add-Type -AssemblyName System.Windows.Forms
@@ -137,10 +149,24 @@ if ($Serverlist -ne ""){
     $Computername = Get-Content -Path $Serverlist
 }
 
-$CertArray = $()
+$CertArray = @()
 
 foreach (${item} in ${Computername}) {
-    $PSSession = New-PSSession -ComputerName $item
+    if($AlterateCreds -eq $true){
+        if (Test-Connection -ComputerName $item -Quiet) {
+            $PSSession = New-PSSession -ComputerName $item -Credential $mypwd 
+        } else {
+            Write-Host "Unable to connect to $item" -ForegroundColor 'red'
+			exit
+        }
+	} else {
+        if (Test-Connection -ComputerName $item -Quiet) {
+            $PSSession = New-PSSession -ComputerName $item
+        } else {
+            Write-Host "Unable to connect to $item" -ForegroundColor 'red'
+			exit
+        }		
+	}
     $CertObj = Invoke-Command -ScriptBlock {Get-ChildItem -Path $Using:st } -Session $PSSession
     $FilteredCertObj = $CertObj | Where-Object {$_.NotAfter -lt $Date}
     $ifString = $FilteredCertObj.Thumbprint
@@ -156,7 +182,3 @@ if ($AsList -eq $true){
 } else {
     $CertArray | Format-Table -Property PSComputerName,Thumbprint,NotAfter,Issuer -AutoSize -Wrap
 }
-
-
-
-
