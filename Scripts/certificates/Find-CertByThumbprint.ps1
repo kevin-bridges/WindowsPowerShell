@@ -20,6 +20,8 @@
     -AsList
         Description:    Specify if you want the output as list format instead 
                         if table format
+    -AlternateCreds
+        Description     Supply alternate credentials when running script
 .NOTES
  Version       :  1.0
  Author        :  Kevin Bridges
@@ -36,8 +38,8 @@ Find certificate by thumbprint from intermediate store using a computername.
 PS:> .\Find-CertByThumbprint.ps1 -Storetype "Trusted Root" -Thumbprint "BA6FC1BC6544F6B656A74FD2244001CA35441425" -Localhost -AsList
 Find certificate by thumbprint from trusted root store on localhost.
 .EXAMPLE 
-PS:> .\Find-CertByThumbprint.ps1 -Storetype "Personal" -Thumbprint "BA6FC1BC6544F6B656A74FD2244001CA35441425" -Computername "web1", "Web2"
-Find certificate by thumbprint from personal store using 2 computernames.
+PS:> .\Find-CertByThumbprint.ps1 -Storetype "Personal" -Thumbprint "BA6FC1BC6544F6B656A74FD2244001CA35441425" -Computername "web1", "Web2" -AlternateCreds
+Find certificate by thumbprint from personal store using 2 computernames using alternate credentials.
 #>
 [CmdletBinding(DefaultParameterSetName="Hostname")]
 param(
@@ -46,7 +48,8 @@ param(
   [Parameter(Mandatory=$true,ParameterSetName='List')] [string] $Serverlist,
   [Parameter(Mandatory=$true,ParameterSetName='Localhost')] [switch] $Localhost,
   [Parameter(Mandatory=$true)] [string] $Thumbprint,
-  [Parameter(Mandatory=$false)] [switch] $AsList
+  [Parameter(Mandatory=$false)] [switch] $AsList,
+  [Parameter(Mandatory=$false)] [Switch] $AlterateCreds=$false
 )
 
 # Map friendly names to actual cert store objects
@@ -56,6 +59,16 @@ if ($storetype -eq 'Personal'){
     $st = 'Cert:\LocalMachine\Root'
 } elseif ($storetype -eq 'Intermediate'){
     $st = 'cert:\LocalMachine\ca'
+}
+
+# Get altername credentials if switch is selected
+if($AlterateCreds -eq $true){
+    $error.Clear()
+    $mypwd = Get-Credential
+    if ($error.Count -gt 0) {
+        Write-Error "User canceled"
+        exit
+    }
 }
 
 # If localhost flag is provided, run the script locally
@@ -75,10 +88,25 @@ if ($Serverlist -ne ""){
     $Computername = Get-Content -Path $Serverlist
 }
 
-$CertArray = $()
+$CertArray = @()
 
 foreach (${item} in ${Computername}) {
-    $PSSession = New-PSSession -ComputerName $item
+    if($AlterateCreds -eq $true){
+        if (Test-Connection -ComputerName $item -Quiet) {
+            $PSSession = New-PSSession -ComputerName $item -Credential $mypwd 
+        } else {
+            Write-Host "Unable to connect to $item" -ForegroundColor 'red'
+			exit
+        }
+	} else {
+        if (Test-Connection -ComputerName $item -Quiet) {
+            $PSSession = New-PSSession -ComputerName $item
+        } else {
+            Write-Host "Unable to connect to $item" -ForegroundColor 'red'
+			exit
+        }
+		
+	}
     $CertObj = Invoke-Command -ScriptBlock {Get-ChildItem -Path $Using:st } -Session $PSSession
     $FilteredCertObj = $CertObj | Where-Object {$_.Thumbprint -eq $Thumbprint}
     $ifString = $FilteredCertObj.Thumbprint
