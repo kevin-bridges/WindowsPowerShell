@@ -1,8 +1,8 @@
 <#
 .SYNOPSIS
-  Remotely Deploy Pfx or P12 Certificates to our servers
+  Remotely Deploy Pfx or P12 Certificates to servers on network.
 .DESCRIPTION
-  Remotely Deploy Pfx or P12 Certificates to our servers. Uses interactive password window for creds.
+  Remotely Deploy Pfx or P12 Certificates to servers on network. Uses interactive password window for creds.
 
   Params:
     -Certfile
@@ -23,6 +23,8 @@
     -Localhost
         Description     Flag used to run the script locally.
                         You can also use Import-PfxCertificate instead of this script
+    -AlternateCreds
+        Description     Supply alternate credentials when running script
 .NOTES
  Version       :  1.0
  Author        :  Kevin Bridges
@@ -41,6 +43,9 @@ Store pfx cert remotely to Intermediate store on 2 servers using the computernam
 .EXAMPLE 
 PS:> .\Add-PfxCert.ps1 -Certfile ".\cert.p12" -Storetype "Personal" -Exportable -Localhost
 Store p12 cert locally to Trusted Root store as Exportable (You can also use Import-PfxCertificate for this)
+.EXAMPLE 
+PS:> .\Add-PfxCert.ps1 -Certfile ".\cert.p12" -Storetype "Personal" -Computername "web1" -AlternateCreds
+Store p12 cert to server using alternate credentials
 #>
 [CmdletBinding(DefaultParameterSetName="Hostname")]
 param(
@@ -49,8 +54,8 @@ param(
     [Parameter(Mandatory=$false)] [Switch] $Exportable=$false,
     [Parameter(Mandatory=$true,ParameterSetName='Hostname')] [string[]] $Computername,
     [Parameter(Mandatory=$true,ParameterSetName='List')] [string] $Serverlist,
-    [Parameter(Mandatory=$true,ParameterSetName='Localhost')] [switch] $Localhost
-    
+    [Parameter(Mandatory=$true,ParameterSetName='Localhost')] [switch] $Localhost,
+    [Parameter(Mandatory=$false)] [Switch] $AlterateCreds=$false   
 )
 
 #check to see if user is running script as administrator
@@ -63,6 +68,16 @@ Break
 Write-Host 'Script is running as administrator. Script can continue...' -ForegroundColor Green
 }
 
+# Get altername credentials if switch is selected
+if($AlterateCreds -eq $true){
+    $error.Clear()
+    $mypwd = Get-Credential
+    if ($error.Count -gt 0) {
+        Write-Error "User canceled"
+        exit
+    }
+}
+
 # If serverlist file has content, populate $Computername array with contents
 if ($Serverlist -ne ""){
     #Get-Content -Path $Serverlist
@@ -70,8 +85,8 @@ if ($Serverlist -ne ""){
 }
 
 # Get Secure Password String from user
-$mypwd = Get-Credential -UserName 'Enter password below' -Message 'Enter password below'
-$token = $mypwd.Password
+$mypfxpwd = Get-Credential -UserName 'Enter Pfx password below' -Message 'Enter Pfx password below'
+$token = $mypfxpwd.Password
 
 # Map friendly names to actual cert store objects
 if ($Storetype -eq 'Personal'){
@@ -99,7 +114,22 @@ if ($Localhost -eq $true){
 foreach (${item} in ${Computername}) {
     $myCertDir = 'C:\Temp\mycert'
     $certDest = "$myCertDir\\$Certfilename"
-    $PSSession = New-PSSession -ComputerName $item
+    if($AlterateCreds -eq $true){
+        if (Test-Connection -ComputerName $item -Quiet) {
+            $PSSession = New-PSSession -ComputerName $item -Credential $mypwd 
+        } else {
+            Write-Host "Unable to connect to $item" -ForegroundColor 'red'
+			exit
+        }
+	} else {
+        if (Test-Connection -ComputerName $item -Quiet) {
+            $PSSession = New-PSSession -ComputerName $item
+        } else {
+            Write-Host "Unable to connect to $item" -ForegroundColor 'red'
+			exit
+        }
+		
+	}
     
     # Make sure C:\Temp exists
     $result = Invoke-Command -ScriptBlock {
@@ -139,9 +169,3 @@ foreach (${item} in ${Computername}) {
 
     $PSSession | Remove-PSSession
 }
- 
-
-
-
-
-
