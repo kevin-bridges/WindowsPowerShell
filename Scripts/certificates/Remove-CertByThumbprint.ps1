@@ -17,7 +17,8 @@
         Types:          *.txt
     -Localhost
         Description     Flag used if you want to run the command locally
-
+    -AlternateCreds
+        Description     Supply alternate credentials when running script
 .NOTES
  Version       :  1.0
  Author        :  Kevin Bridges
@@ -34,8 +35,8 @@ Find certificate by thumbprint from intermediate store using a computername.
 PS:> .\Remove-CertByThumbprint.ps1 -Storetype "Trusted Root" -Thumbprint "BA6FC1BC6544F6B656A74FD2244001CA35441425" -Localhost
 Find certificate by thumbprint from trusted root store on localhost.
 .EXAMPLE 
-PS:> .\Remove-CertByThumbprint.ps1 -Storetype "Personal" -Thumbprint "BA6FC1BC6544F6B656A74FD2244001CA35441425" -Computername "web1", "Web2"
-Find certificate by thumbprint from personal store using 2 computernames.
+PS:> .\Remove-CertByThumbprint.ps1 -Storetype "Personal" -Thumbprint "BA6FC1BC6544F6B656A74FD2244001CA35441425" -Computername "web1", "Web2" -AlternateCreds
+Find certificate by thumbprint from personal store using 2 computernames using alternate credentials.
 #>
 [CmdletBinding(DefaultParameterSetName="Hostname")]
 param(
@@ -43,7 +44,8 @@ param(
   [Parameter(Mandatory=$true,ParameterSetName='Hostname')] [string[]] $Computername,
   [Parameter(Mandatory=$true,ParameterSetName='List')] [string] $Serverlist,
   [Parameter(Mandatory=$true,ParameterSetName='Localhost')] [switch] $Localhost,
-  [Parameter(Mandatory=$true)] [string] $Thumbprint
+  [Parameter(Mandatory=$true)] [string] $Thumbprint,
+  [Parameter(Mandatory=$false)] [Switch] $AlterateCreds=$false
 )
 
 #check to see if user is running script as administrator
@@ -54,6 +56,16 @@ Write-Warning 'Insufficient permissions to run this script. Open the PowerShell 
 Break
 } else {
 Write-Host 'Script is running as administrator. Script can continue...' -ForegroundColor Green
+}
+
+# Get altername credentials if switch is selected
+if($AlterateCreds -eq $true){
+    $error.Clear()
+    $mypwd = Get-Credential
+    if ($error.Count -gt 0) {
+        Write-Error "User canceled"
+        exit
+    }
 }
 
 # Map friendly names to actual cert store objects
@@ -84,7 +96,22 @@ if ($Serverlist -ne ""){
 }
 
 foreach (${item} in ${Computername}) {
-    $PSSession = New-PSSession -ComputerName $item
+    if($AlterateCreds -eq $true){
+        if (Test-Connection -ComputerName $item -Quiet) {
+            $PSSession = New-PSSession -ComputerName $item -Credential $mypwd 
+        } else {
+            Write-Host "Unable to connect to $item" -ForegroundColor 'red'
+			exit
+        }
+	} else {
+        if (Test-Connection -ComputerName $item -Quiet) {
+            $PSSession = New-PSSession -ComputerName $item
+        } else {
+            Write-Host "Unable to connect to $item" -ForegroundColor 'red'
+			exit
+        }
+		
+	}
     $CertObj = Invoke-Command -ScriptBlock {Get-ChildItem -Path $Using:st } -Session $PSSession
     $FilteredCertObj = $CertObj | Where-Object {$_.Thumbprint -eq $Thumbprint}
     $ifString = $FilteredCertObj.Thumbprint
