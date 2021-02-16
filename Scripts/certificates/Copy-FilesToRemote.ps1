@@ -5,6 +5,20 @@
   Easy copy utility to copy files or folders to multiple servers.
   Can also easily specify to copy as another accont user.
   This can be useful if copying items to another domain.
+
+  Params:
+  -FilePath
+        Description     Filepath of file or folder you want to copy
+  -ToDir
+        Description     Target directory on remote server where the file
+                        or folders will be copied to
+  -Serverlist
+        Description:    Text file which contains the list of target servers.
+        Types:          *.txt
+    -Computername
+        Description     Target Server or Servers (Comma separated)
+    -AlternateCreds
+        Description     Supply alternate credentials when running script
 .NOTES
  Version       :  1.0
  Author        :  Kevin Bridges
@@ -110,9 +124,6 @@ foreach (${item} in ${Computername}) {
 
         $PSSession | Remove-PSSession 
     }
-
-    
-
 }
 
 $entries
