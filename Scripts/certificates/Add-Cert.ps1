@@ -1,8 +1,8 @@
 <#
 .SYNOPSIS
-  Remotely Deploy Certificates to our servers
+  Remotely Deploy Certificates to servers on network
 .DESCRIPTION
-  Remotely Deploy Certificates to our servers
+  Remotely Deploy Certificates to servers on network
   Does not deploy Pfx Certs (Use Add-PfxCert.ps1 instead)
 
   Params:
@@ -21,6 +21,8 @@
     -Localhost
         Description     Flag used to run the script locally.
                         You can also use Import-Certificate instead of this script
+    -AlternateCreds
+        Description     Supply alternate credentials when running script
 .NOTES
  Version       :  1.0
  Author        :  Kevin Bridges
@@ -39,6 +41,10 @@ Store cert remotely to Trusted Root store using a server list text file
 .EXAMPLE
 PS:> .\Add-Cert.ps1 -certfile ".\cert.cer" -storetype "Personal" -Computername "web1", "web2"
 Store cert remotely to Trusted Root store using a server list text file
+.EXAMPLE 
+PS:>  .\Add-Cert.ps1 -certfile .\cert.cer -storetype Personal -Computername web1 -AlterateCreds
+Copy a single file to remote server using alternate credentials
+An interactive password window stores the credentials
 #>
 [CmdletBinding(DefaultParameterSetName="Hostname")]
 param(
@@ -46,7 +52,8 @@ param(
     [Parameter(Mandatory=$true)][ValidateSet("Personal", "Trusted Root", "Intermediate")] [string] $storetype,
     [Parameter(Mandatory=$true,ParameterSetName='Hostname')] [string[]] $Computername,
     [Parameter(Mandatory=$true,ParameterSetName='List')] [string] $Serverlist,
-    [Parameter(Mandatory=$true,ParameterSetName='Localhost')] [switch] $Localhost
+    [Parameter(Mandatory=$true,ParameterSetName='Localhost')] [switch] $Localhost,
+    [Parameter(Mandatory=$false)] [Switch] $AlterateCreds=$false
 )
 
 #check to see if user is running script as administrator
@@ -57,6 +64,16 @@ Write-Warning 'Insufficient permissions to run this script. Open the PowerShell 
 Break
 } else {
 Write-Host 'Script is running as administrator. Script can continue...' -ForegroundColor Green
+}
+
+# Get altername credentials if switch is selected
+if($AlterateCreds -eq $true){
+    $error.Clear()
+    $mypwd = Get-Credential
+    if ($error.Count -gt 0) {
+        Write-Error "User canceled"
+        exit
+    }
 }
 
 if ($Serverlist -ne ""){
@@ -87,7 +104,23 @@ if ($Localhost -eq $true){
 foreach (${item} in ${Computername}) {
     $myCertDir = 'C:\Temp\mycert'
     $certDest = "$myCertDir\\$certfilename"
-    $PSSession = New-PSSession -ComputerName $item
+    
+    if($AlterateCreds -eq $true){
+        if (Test-Connection -ComputerName $item -Quiet) {
+            $PSSession = New-PSSession -ComputerName $item -Credential $mypwd 
+        } else {
+            Write-Host "Unable to connect to $item" -ForegroundColor 'red'
+            exit
+        }
+	} else {
+        if (Test-Connection -ComputerName $item -Quiet) {
+            $PSSession = New-PSSession -ComputerName $item
+        } else {
+            Write-Host "Unable to connect to $item" -ForegroundColor 'red'
+            exit
+        }
+		
+	}
 
     # Make sure C:\Temp exists
     $result = Invoke-Command -ScriptBlock {
@@ -121,9 +154,3 @@ foreach (${item} in ${Computername}) {
 
     $PSSession | Remove-PSSession
 }
-
-
-
-
-
-
