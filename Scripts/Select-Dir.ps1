@@ -129,7 +129,7 @@ if (-not(Test-Path -Path $filepath -PathType Leaf)) {
 if ($AddPresentDirectory -eq $true) {
     $pdir = (pwd).Path
     Add-Content -Path $filepath -Value $pdir -Force
-    Write-Host "Added [$filepath] to favorites"
+    Write-Host "Added [$pdir] to favorites"
     break
 }
 
