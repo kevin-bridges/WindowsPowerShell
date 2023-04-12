@@ -1,35 +1,42 @@
 <#
 .SYNOPSIS
-Updates the binding information for a website in IIS on one or more remote servers.
+Updates IIS bindings on multiple servers.
 
 .DESCRIPTION
-This script updates the binding information for a website in IIS on one or more remote servers. The script accepts the following parameters:
-- SiteName: The name of the website to update.
-- IPAddress: The new IP address to use for the binding.
-- Port: The new port to use for the binding.
-- ComputerName: An optional list of remote server names to update. If not specified, the script will run locally.
+This script updates the IIS bindings on multiple servers.
 
 .PARAMETER SiteName
-The name of the website to update.
+The name of the IIS site to update.
 
-.PARAMETER IPAddress
-The new IP address to use for the binding.
+.PARAMETER Protocol
+The protocol to use for the IIS site (HTTP or HTTPS).
 
 .PARAMETER Port
-The new port to use for the binding.
+The port to use for the IIS site.
+
+.PARAMETER IPAddress
+The IP address to use for the IIS site.
 
 .PARAMETER ComputerName
-An optional list of remote server names to update. If not specified, the script will run locally.
+A string specifying the name of a single server to update. If this parameter is provided, the script will update IIS bindings on the specified server.
+
+.PARAMETER ServerList
+The path to a text file containing a list of servers to update. If this parameter is provided, the script will read the list of servers from the specified file and update IIS bindings on each server.
 
 .EXAMPLE
-Update-IISBinding -SiteName "MySite" -IPAddress "10.0.0.1" -Port "80" -ComputerName "Server01", "Server02"
+Update-IISBindings -SiteName "MySite" -Protocol "HTTPS" -Port "443" -IPAddress "10.0.0.1" -ComputerName "Server01"
+Updates the IIS bindings for the "MySite" site with HTTPS protocol and IP address 10.0.0.1 and port 443 on the server "Server01".
 
-This example updates the binding information for the website named "MySite" to use the IP address "10.0.0.1" and port "80" on the servers "Server01" and "Server02".
+.EXAMPLE
+Update-IISBindings -SiteName "MySite" -Protocol "HTTP" -Port "80" -IPAddress "10.0.0.2" -ServerList "C:\servers.txt"
+Updates the IIS bindings for the "MySite" site with HTTP protocol and IP address 10.0.0.2 and port 80 on the servers listed in the "servers.txt" file.
 
 .NOTES
-This script requires the WebAdministration module to be installed on the server(s) being updated.
+Author: Kevin Bridges
+Last Updated: 12 APR 2023
+Version: 1.0
+#> 
 
-#>
 
 param(
     [string]$SiteName,
