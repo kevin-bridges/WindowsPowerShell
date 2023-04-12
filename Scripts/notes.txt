@@ -1,0 +1,8 @@
+C:\Users\kbridges> Import-Module WebAdministration
+Import-Module : The specified module 'WebAdministration' was not loaded because no valid module file was found in any
+module directory.
+At line:1 char:1
++ Import-Module WebAdministration
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ResourceUnavailable: (WebAdministration:String) [Import-Module], FileNotFoundException
+    + FullyQualifiedErrorId : Modules_ModuleNotFound,Microsoft.PowerShell.Commands.ImportModuleCommand
