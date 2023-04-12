@@ -35,8 +35,13 @@ param(
     [string]$SiteName,
     [string]$IPAddress,
     [string]$Port,
-    [string[]]$ComputerName
+    [Parameter(Mandatory=$true,ParameterSetName='Hostname')] [string[]] $Computername,
+    [Parameter(Mandatory=$true,ParameterSetName='List')] [string] $Serverlist,
 )
+
+if ($Serverlist -ne ""){
+    $Computername = Get-Content -Path $Serverlist
+}
 
 # Loop through the list of computer names
 foreach ($Computer in $ComputerName) {
