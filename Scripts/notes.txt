@@ -6,3 +6,35 @@ At line:1 char:1
 + ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     + CategoryInfo          : ResourceUnavailable: (WebAdministration:String) [Import-Module], FileNotFoundException
     + FullyQualifiedErrorId : Modules_ModuleNotFound,Microsoft.PowerShell.Commands.ImportModuleCommand
+
+
+
+--------------------------------------------
+
+
+The error message suggests that PowerShell was unable to find a valid module file for the WebAdministration module in any of the directories listed in $env:PSModulePath.
+
+The WebAdministration module is part of the IIS PowerShell snap-in, which is included with the IIS installation on Windows. In order to use the WebAdministration module, you need to ensure that the IIS PowerShell snap-in is installed and available on your system.
+
+To install the IIS PowerShell snap-in, follow these steps:
+
+Open the Control Panel and navigate to "Programs and Features".
+Click on "Turn Windows features on or off".
+Scroll down to "Internet Information Services" and expand it.
+Expand "Web Management Tools".
+Check the box next to "IIS Management Scripts and Tools".
+Click "OK" to save the changes and close the window.
+After the IIS PowerShell snap-in is installed, you should be able to load the WebAdministration module using Import-Module WebAdministration without receiving the "module not found" error.
+
+
+
+
+Kevin Bridges
+can you provide me a web link to where you found that information?
+Certainly! Here is a link to the official Microsoft documentation on Import-Module:
+
+https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/import-module?view=powershell-7.1
+
+And here is a link to the documentation on PowerShell module paths:
+
+https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_module_paths?view=powershell-7.1
