@@ -46,6 +46,16 @@ param(
     [Parameter(Mandatory=$true,ParameterSetName='List')] [string] $Serverlist,
 )
 
+#check to see if user is running script as administrator
+Write-Host "Checking for elevated permissions..."
+if (-NOT ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(`
+[Security.Principal.WindowsBuiltInRole] "Administrator")) {
+Write-Warning 'Insufficient permissions to run this script. Open the PowerShell console as an administrator and run this script again.'
+Break
+} else {
+Write-Host 'Script is running as administrator. Script can continue...' -ForegroundColor Green
+}
+
 if ($Serverlist -ne ""){
     $Computername = Get-Content -Path $Serverlist
 }
