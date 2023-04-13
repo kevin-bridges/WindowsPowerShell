@@ -50,3 +50,15 @@ At line:55 char:5
 +     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
     + CategoryInfo          : ResourceUnavailable: (:) [Get-Help], HelpNotFoundException
     + FullyQualifiedErrorId : HelpNotFound,Microsoft.PowerShell.Commands.GetHelpCommand
+    
+    
+    
+C:\Temp\WindowsPowerShell-master\WindowsPowerShell-master\Scripts> update-help
+update-help : Failed to update Help for the module(s) 'ConfigDefender, ConfigDefenderPerformance, HostNetworkingService,
+PSReadline' with UI culture(s) {en-US} : Unable to retrieve the HelpInfo XML file for UI culture en-US. Make sure the
+HelpInfoUri property in the module manifest is valid or check your network connection and then try the command again.
+At line:1 char:1
++ update-help
++ ~~~~~~~~~~~
+    + CategoryInfo          : ResourceUnavailable: (:) [Update-Help], Exception
+    + FullyQualifiedErrorId : UnableToRetrieveHelpInfoXml,Microsoft.PowerShell.Commands.UpdateHelpCommand
