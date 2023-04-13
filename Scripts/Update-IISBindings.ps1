@@ -1,3 +1,6 @@
+# Set the help provider to HelpFile
+Set-HelpProvider -Name HelpFile
+
 <#
 .SYNOPSIS
 	Updates IIS bindings on multiple servers.
