@@ -38,3 +38,15 @@ https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/imp
 And here is a link to the documentation on PowerShell module paths:
 
 https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_module_paths?view=powershell-7.1
+
+
+
+C:\Temp\WindowsPowerShell-master\WindowsPowerShell-master\Scripts> help .\Update-IISBindings.ps1
+Get-Help : Get-Help could not find .\Update-IISBindings.ps1 in a help file in this session. To download updated help topics
+type: "Update-Help". To get help online, search for the help topic in the TechNet library at
+https:/go.microsoft.com/fwlink/?LinkID=107116.
+At line:55 char:5
++     Get-Help @PSBoundParameters | more
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ResourceUnavailable: (:) [Get-Help], HelpNotFoundException
+    + FullyQualifiedErrorId : HelpNotFound,Microsoft.PowerShell.Commands.GetHelpCommand
