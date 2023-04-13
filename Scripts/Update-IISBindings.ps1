@@ -1,40 +1,30 @@
 <#
 .SYNOPSIS
-Updates IIS bindings on multiple servers.
-
+	Updates IIS bindings on multiple servers.
 .DESCRIPTION
-This script updates the IIS bindings on multiple servers.
-
+	This script updates the IIS bindings on multiple servers.
 .PARAMETER SiteName
-The name of the IIS site to update.
-
+	The name of the IIS site to update.
 .PARAMETER Protocol
-The protocol to use for the IIS site (HTTP or HTTPS).
-
+	The protocol to use for the IIS site (HTTP or HTTPS).
 .PARAMETER Port
-The port to use for the IIS site.
-
+	The port to use for the IIS site.
 .PARAMETER IPAddress
-The IP address to use for the IIS site.
-
+	The IP address to use for the IIS site.
 .PARAMETER ComputerName
-A string specifying the name of a single server to update. If this parameter is provided, the script will update IIS bindings on the specified server.
-
+	A string specifying the name of a single server to update. If this parameter is provided, the script will update IIS bindings on the specified server.
 .PARAMETER ServerList
-The path to a text file containing a list of servers to update. If this parameter is provided, the script will read the list of servers from the specified file and update IIS bindings on each server.
-
-.EXAMPLE
-Update-IISBindings -SiteName "MySite" -Protocol "HTTPS" -Port "443" -IPAddress "10.0.0.1" -ComputerName "Server01"
-Updates the IIS bindings for the "MySite" site with HTTPS protocol and IP address 10.0.0.1 and port 443 on the server "Server01".
-
-.EXAMPLE
-Update-IISBindings -SiteName "MySite" -Protocol "HTTP" -Port "80" -IPAddress "10.0.0.2" -ServerList "C:\servers.txt"
-Updates the IIS bindings for the "MySite" site with HTTP protocol and IP address 10.0.0.2 and port 80 on the servers listed in the "servers.txt" file.
-
+	The path to a text file containing a list of servers to update. If this parameter is provided, the script will read the list of servers from the specified file and update IIS bindings on each server.
 .NOTES
-Author: Kevin Bridges
-Last Updated: 12 APR 2023
-Version: 1.0
+	Author: Kevin Bridges
+	Last Updated: 12 APR 2023
+	Version: 1.0
+.EXAMPLE
+	Update-IISBindings -SiteName "MySite" -Protocol "HTTPS" -Port "443" -IPAddress "10.0.0.1" -ComputerName "Server01"
+	Updates the IIS bindings for the "MySite" site with HTTPS protocol and IP address 10.0.0.1 and port 443 on the server "Server01".
+.EXAMPLE
+	Update-IISBindings -SiteName "MySite" -Protocol "HTTP" -Port "80" -IPAddress "10.0.0.2" -ServerList "C:\servers.txt"
+	Updates the IIS bindings for the "MySite" site with HTTP protocol and IP address 10.0.0.2 and port 80 on the servers listed in the "servers.txt" file.
 #> 
 
 
