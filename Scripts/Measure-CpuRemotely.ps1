@@ -2,9 +2,9 @@
 .SYNOPSIS
   Measure Average CPU utilization remotely
 .DESCRIPTION
-  Measure Average CPU utilization remotely by either locally, by computername, or by serverlist.
+  Measure Average CPU utilization remotely by either locally, by computername, or by serverlist. 
+  Can specify SampleInterval (default:3) and MaxSamples (default:5)
 .NOTES
- (your notes)
  Version       :  1.0
  Author        :  Kevin Bridges
  Creation Date :  3 AUG 2023
@@ -17,6 +17,9 @@ Run Locally
 PS:> .\measure-CpuRemotely.ps1 -Computername "web1","web2"
 Run by computername(s)
 .EXAMPLE 
+PS:> .\measure-CpuRemotely.ps1 -Computername "web1","web2" -SampleInterval 4 -MaxSamples 4
+Run by computername(s) and specify SampleInterval and MaxSamples values
+.EXAMPLE 
 PS:> .\measure-CpuRemotely.ps1 -Computername "web1","web2" -AlterateCreds
 Run by computername(s) as different user
 .EXAMPLE 
@@ -28,6 +31,8 @@ param(
     [Parameter(Mandatory=$true,ParameterSetName='Hostname')] [string[]] $Computername,
     [Parameter(Mandatory=$true,ParameterSetName='List')] [string] $Serverlist,
     [Parameter(Mandatory=$true,ParameterSetName='Localhost')] [switch] $Localhost,
+    [Parameter(Mandatory=$false)] [int] $SampleInterval = 3,
+    [Parameter(Mandatory=$false)] [int] $MaxSamples = 5,
     [Parameter(Mandatory=$false)] [Switch] $AlterateCreds=$false
 )
 
@@ -64,7 +69,7 @@ if ($Serverlist -ne ""){
 if ($Localhost -eq $true){
     $MeasurementsArray = @()
     #add cert to store
-    $CPUPerformance = (GET-COUNTER -Counter "\Processor(_Total)\% Processor Time" -SampleInterval 3 -MaxSamples 5 |Select-Object -ExpandProperty countersamples | Select-Object -ExpandProperty cookedvalue )
+    $CPUPerformance = (GET-COUNTER -Counter "\Processor(_Total)\% Processor Time" -SampleInterval $SampleInterval -MaxSamples $MaxSamples |Select-Object -ExpandProperty countersamples | Select-Object -ExpandProperty cookedvalue )
     $CPUAveragePerformance = ($CPUPerformance | Measure-Object -Average).average
     $MaxCPU = ($CPUPerformance | Measure-Object -Maximum).Maximum
     
@@ -124,7 +129,7 @@ foreach (${item} in ${Computername}) {
         #Measure CPU
         #Get-CimInstance win32_processor | Measure-Object -Property LoadPercentage -Average;
         $MeasurementsArray = @()
-        $CPUPerformance = (GET-COUNTER -Counter "\Processor(_Total)\% Processor Time" -SampleInterval 3 -MaxSamples 5 |Select-Object -ExpandProperty countersamples | Select-Object -ExpandProperty cookedvalue )
+        $CPUPerformance = (GET-COUNTER -Counter "\Processor(_Total)\% Processor Time" -SampleInterval $SampleInterval -MaxSamples $MaxSamples |Select-Object -ExpandProperty countersamples | Select-Object -ExpandProperty cookedvalue )
         $CPUAveragePerformance = ($CPUPerformance | Measure-Object -Average).average
         $MaxCPU = ($CPUPerformance | Measure-Object -Maximum).Maximum
         $Row = "" | Select-Object AverageCPU, MaxCPU
